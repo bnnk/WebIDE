@@ -1,0 +1,8 @@
+.project {
+	width: 300px;
+}
+.projectbox {
+	width: 340px;
+	padding: 20px;
+	border-radius: 10px;
+}

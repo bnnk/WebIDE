@@ -1,0 +1,85 @@
+<h1>Remote IDE at <font color="purple">{{ hostname }}:{{ port }}</font></h1>
+
+<ul class="nav nav-tabs">
+  <li id="proj-create-tab" class="active"><a href="#">Create a Project</a></li>
+  <li id="proj-load-tab" class=""><a href="#">Load a Project</a></li>
+</ul>
+
+<div class="projectbox" id="proj-create">
+	<input id="proj-create-name" class="project form-control" placeholder="Project name"><br/>
+	<textarea id="proj-create-desc" class="project form-control" placeholder="Description"></textarea><br/>
+	<button id="proj-create-submit" type="button" class="btn btn-success">Create</button>
+</div>
+
+<div class="projectbox" id="proj-load" hidden="true">
+	<select class="project form-control" id="proj-load-list" placeholder="Project name"></select><br/>
+	<button id="proj-load-submit" type="button" class="btn btn-success">Load</button>
+</div>
+
+<div id="error-log" class="" hidden="true" style="width: 600px;"></div>
+
+<script type="text/javascript">
+
+function displayMsg(error, c) {
+	$("#error-log").html(error);
+	$("#error-log").removeClass();
+	$("#error-log").addClass("alert");
+	$("#error-log").addClass(c);
+	$("#error-log").show();
+}
+
+function loadProject(project) {
+	console.log("loading " + project);
+	window.location.href = "view/" + project;
+}
+
+$("#proj-create-tab").click(function () {
+	$("#proj-create").show();
+	$("#proj-load").hide();
+	$("#proj-create-tab").toggleClass("active");
+	$("#proj-load-tab").toggleClass("active");
+});
+
+$("#proj-load-tab").click(function () {
+	$.ajax({
+		url:'get/projects',
+		type:'POST',
+		success: function(response) {
+			$("#proj-load-list").empty();
+			$.each(JSON.parse(response), function(i, obj) {
+				$("#proj-load-list").append($("<option>").text(obj).attr("value", obj));
+			});
+		}
+	});
+	$("#proj-create").hide();
+	$("#proj-load").show();
+	$("#proj-create-tab").toggleClass("active");
+	$("#proj-load-tab").toggleClass("active");
+});
+
+$("#proj-create-submit").click(function () {
+	var projName = $("#proj-create-name").val();
+	var projDesc = $("#proj-create-desc").val();
+	var data = {"name":projName, "desc":projDesc};
+	$.ajax({
+		url:'action/create/project',
+		type:'POST',
+		data:data,
+		success: function(data) {
+			console.log("Server response: " + data);
+			if (data == "SUCCESS") {
+				loadProject(projName);
+				displayMsg("Created project " + projName, "alert-success");
+			} else {
+				displayMsg(data, "alert-danger");
+			}
+		}
+	})
+});
+
+$("#proj-load-submit").click(function () {
+	var projName = $("#proj-load-list").val();
+	loadProject(projName);
+});
+
+</script>
